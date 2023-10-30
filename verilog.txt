@@ -1,0 +1,311 @@
+
+
+//data flow modeling
+
+module and_gate(input a, input b, output c);
+    assign c = (a & b);
+endmodule
+
+module or_gate(input a, input b, input c);
+    assign c = (a|b);
+endmodule
+
+module not_gate(input a, output b);
+    assign c = ~(a);
+endmodule
+
+module xor_gate(input a, input b, input c);
+    assign c = ~(a|b);
+endmodule
+
+module task_b(input a, input b, input c, input d, output f);
+assign f = (a&b)+(c&d);
+endmodule
+
+module task_b(input a, input b, input c, input d, output g);
+assign g = (a|b)&(c|d);
+endmodule
+
+module full_adder(input a, input b, input cin, output summ, output carry);
+    wire s1, s2, c1, c2;
+    
+    // First XOR gate
+    assign s1 = a ^ b;
+    assign c1 = a & b;
+    
+    // Second XOR gate
+    assign summ = s1 ^ cin;
+    assign c2 = s1 & cin;
+    
+    // OR gate for final carry out
+    assign carry = c1 | c2;
+endmodule
+
+
+
+//gate level modeling
+
+module mux_8x1(input [7:0] data, input [2:0] sel, output wire out);
+
+  wire w1, w2, w3, w4, w5, w6, w7, w8;
+
+  // AND gates for each data input and corresponding select lines
+  and(w1, data[0], ~sel[2], ~sel[1], ~sel[0]);
+  and(w2, data[1], ~sel[2], ~sel[1], sel[0]);
+  and(w3, data[2], ~sel[2], sel[1], ~sel[0]);
+  and(w4, data[3], ~sel[2], sel[1], sel[0]);
+  and(w5, data[4], sel[2], ~sel[1], ~sel[0]);
+  and(w6, data[5], sel[2], ~sel[1], sel[0]);
+  and(w7, data[6], sel[2], sel[1], ~sel[0]);
+  and(w8, data[7], sel[2], sel[1], sel[0]);
+
+  // OR gates for final output
+  assign out = w1 | w2 | w3 | w4 | w5 | w6 | w7 | w8;
+
+endmodule
+
+module full_subtractor(input a, input b, input c, output diff, output borrow);
+
+  wire w1, w2, aneg, w4, w5, w6;
+
+  // XOR gates for difference calculation
+  xor (w1, a, b);
+  xor (diff, w1, c); // Difference output
+
+  // NOT gate for negating 'a'
+  not (aneg, a);
+
+  // AND gates for borrow calculation
+  and (w4, aneg, b);
+  and (w5, w1, c);
+  or (w6, w5, w4);
+
+  assign borrow = w6;
+
+endmodule
+
+
+module full_adder(input a, input b, input cin, output carry, output summ);
+
+  wire w1, w2, w3, w4;
+
+  // XOR gate for sum output
+  xor (w1, a, b);
+  xor (summ, w1, cin); // Corrected Sum output assignment
+
+  // AND gates for carry calculation
+  and (w2, a, b);
+  and (w3, w1, cin);
+
+  // OR gate for carry output
+  or (w4, w2, w3);
+  assign carry = w4;
+
+endmodule
+
+
+//8x1 mux using structural modeling
+
+module mux_eight(s0,s1,s2,i0,i1,i2,i3,i4,i5,i6,i7,out);
+input i0,i1,i2,i3,i4,i5,i6,i7,s0,s1,s2;
+output out;
+reg out;
+
+always@(s0 or s1 or s2 or i0 or i1 or i2 or i3 or i4 or i5 or i6 or i7)
+case({s0,s1,s2})
+3'd0: out = i0;
+3'd1: out = i1;
+3'd2: out = i2;
+3'd3: out = i3;
+3'd4: out = i4;
+3'd5: out = i5;
+3'd6: out = i6;
+3'd7: out = i7;
+default: $display("Invalid control signal!");
+endcase
+endmodule
+
+
+//full adder using procedural programming
+module full_adder(input a, input b, input cin, output reg summ, output reg carry);
+    always @(a or b or cin) begin
+        summ = (a ^ b) ^ cin;
+        carry = (a & b) | (b & cin) | (a & cin);
+    end
+endmodule
+
+
+//8x1 using procedural programming
+
+module mux_eight(input [7:0]i,input [2:0]s, output reg out);
+
+always@(i or s)
+
+case({s[2:0]})
+3'd0:out = i[0];
+3'd1:out = i[1];
+3'd2:out = i[2];
+3'd3:out = i[3];
+3'd4:out = i[4];
+3'd5:out = i[5];
+3'd6:out = i[6];
+3'd7:out = i[7];
+
+default: $display("Invalid Input.");
+endcase
+endmodule
+
+
+//two to four decoder
+
+module two_to_4(in,y);
+
+input [1:0] in;
+output reg [3:0] y;
+
+always@(in)
+
+begin
+
+if(in == 2'b00)
+y = 4'b0001;
+else if(in == 2'b01)
+y = 4'b0010;
+else if(in == 2'b10)
+y = 4'b0100;
+else if(in == 2'b11)
+y = 4'b1000;
+else 
+$display("No Input");
+end
+endmodule
+
+
+//ALU using procedural modeling
+
+module alu(a,b,c,sel);
+input [7:0] a;
+input [7:0] b;
+input [3:0] sel;
+output reg [7:0] c;
+
+always@(a or b or sel)
+
+begin
+case(sel)
+4'd0:c = a+b;
+4'd1:c = a-b;
+4'd2:c = a*b;
+4'd3:c = a&&b;
+4'd4:c = a||b;
+4'd5:c = a&b;
+4'd6:c = a|b;
+4'd7:c = a<<b;
+4'd8:c = a>>b;
+4'd9:c = ~a;
+4'd10:c = !a;
+4'd11:c = a+1;
+4'd12:c = a-1;
+4'd13:c = b+1;
+4'd14:c = a-1;
+4'd15:c = b;
+default: $display("No Input Provided!");
+endcase
+end
+endmodule
+
+//sequential ciruits
+
+module s_r_fliflop(q,qneg,s,r,clk);
+
+input s,r,clk;
+
+output  q,qneg;
+reg q = 1'b0;
+reg qneg = 1'b1;
+
+always@(posedge clk)
+begin
+case({s,r})
+2'd0:q = q;
+2'd1:q = 1'b0;
+2'd2:q = 1'b1;
+2'd3:q = 1'bx;
+default: $display("no input");
+endcase
+qneg = ~q;
+end
+endmodule
+
+//2d array in verilog
+
+module two_d_array();
+    reg [7:0] array_2d[3:0][3:0];
+    integer i,j;
+    initial begin
+        array_2d[0][0] = 8'h11;
+        array_2d[0][1] = 8'h22;
+        array_2d[0][2] = 8'h33;
+        array_2d[0][3] = 8'h44;
+        array_2d[1][0] = 8'h55;
+        array_2d[1][1] = 8'h66;
+        array_2d[1][2] = 8'h77;
+        array_2d[1][3] = 8'h88;
+        array_2d[2][0] = 8'h99;
+        array_2d[2][1] = 8'haa; 
+        array_2d[2][2] = 8'hbb;
+        array_2d[2][3] = 8'hcc;
+        array_2d[3][0] = 8'hdd;
+        array_2d[3][1] = 8'h0e; 
+        array_2d[3][2] = 8'hff;
+        array_2d[3][3] = 8'h00;
+        
+        $display("Array Elements:");
+            for (i = 0; i < 4; i = i + 1) begin
+                for (j = 0; j < 4; j = j + 1) begin
+                    $display("array_2d[%0d][%0d] = %h", i, j, array_2d[i][j]);
+                end
+            end
+    end
+endmodule
+
+//a ram of size 16 of 4 bits
+
+module ram(out,read,write,address,data);
+
+    input [3:0] data;
+    input [3:0] address;
+    input read,write;
+    output reg [3:0] out;
+    reg [3:0] temp;
+    reg [3:0] model[15:0];
+
+always@(address)
+    begin
+        if(write) begin
+            model[address] = data;
+            temp = model[address];
+        end
+        if(read) begin
+            out = model[address];
+        end
+    end
+endmodule
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
